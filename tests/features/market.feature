@@ -4,4 +4,3 @@ Feature: Public Market API
     When server time is retrieved
     Then both unixtime and rfc1123 are returned in UTC format
 
-

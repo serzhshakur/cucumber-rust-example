@@ -1,6 +1,7 @@
 pub mod api;
 pub mod config;
 pub mod responses;
+pub mod requests;
 
 use api::{client::ApiClient, api::Api};
 use config::Config;

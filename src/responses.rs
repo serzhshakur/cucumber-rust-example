@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -13,7 +15,11 @@ pub struct ServerTimeResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct OpenOrdersResponse {
-    pub unixtime: i32,
-    pub rfc1123: String,
+pub struct OpenOrderResponse {
+    pub open: HashMap<String, OrderResponse>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct OrderResponse {
+    pub refid: Option<String>,
 }

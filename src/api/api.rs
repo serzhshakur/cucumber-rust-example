@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 
-use crate::responses::{ApiResponse, ServerTimeResponse};
+use crate::{
+    requests::OrderRequest,
+    responses::{ApiResponse, OpenOrderResponse, ServerTimeResponse},
+};
 
 use super::client::ApiClient;
 
@@ -29,5 +32,23 @@ impl MarketApi for Api {
             .await?;
 
         Ok(res.result)
+    }
+}
+
+#[async_trait]
+pub trait UserApi {
+    async fn get_open_orders(&self) -> anyhow::Result<OpenOrderResponse>;
+}
+
+#[async_trait]
+impl UserApi for Api {
+    async fn get_open_orders(&self) -> anyhow::Result<OpenOrderResponse> {
+        let req = OrderRequest::default();
+        let res = self
+            .client
+            .post_private::<OrderRequest, OpenOrderResponse>("0/private/OpenOrders", Some(req))
+            .await?;
+
+        Ok(res)
     }
 }
