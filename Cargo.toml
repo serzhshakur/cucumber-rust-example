@@ -20,7 +20,7 @@ hmac = "0.12"
 base64 = "0.13"
 
 [dev-dependencies]
-cucumber = "0.13"
+cucumber = { version = "0.13", features = ["output-junit"] }
 tokio = { version = "1.17", features = ["macros", "rt-multi-thread", "time"] }
 
 [[test]]

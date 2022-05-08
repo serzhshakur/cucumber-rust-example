@@ -1,9 +1,9 @@
-use std::{collections::HashMap, convert::Infallible};
+use std::{collections::HashMap, convert::Infallible, fs};
 
 use anyhow::bail;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use cucumber::{given, then, when, World, WorldInit};
+use cucumber::{given, then, when, World, WorldInit, writer};
 use xchange_cucumber_rust::{
     api::api::{MarketApi, UserApi},
     requests::{AssetPairInfo, AssetPairsRequest},
@@ -121,7 +121,14 @@ async fn check_open_orders_count(world: &mut MyWorld, count: u8) -> anyhow::Resu
 }
 
 #[tokio::main]
-async fn main() {
-    MyWorld::cucumber().run_and_exit("tests/features/").await;
-    // AnimalWorld::run("tests/features/").await;
+async fn main() -> anyhow::Result<()> {
+    let file = fs::File::create(dbg!(format!(
+        "{}/target/junit.xml",
+        env!("CARGO_MANIFEST_DIR")
+    )))?;
+    MyWorld::cucumber()
+        .with_writer(writer::JUnit::new(file, 1))
+        .run("tests/features/")
+        .await;
+    Ok(())
 }
