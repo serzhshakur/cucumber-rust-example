@@ -1,0 +1,27 @@
+name: Tests CI
+on: workflow_dispatch
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  profile: minimal
+
+            - name: Rust caching
+              uses: Swatinem/rust-cache@v1
+
+            - name: Build & Test
+              env:
+                  PROFILE: ci
+                  API_URL: ${{ secrets.api_url }}
+                  PRIV_KEY: ${{ secrets.priv_key }}
+                  API_KEY: ${{ secrets.api_key }}
+                  TFA_PASSWORD: ${{ secrets.tfa_password }}
+              run: |
+                  cargo test --lib
+                  cargo test --test xchange
