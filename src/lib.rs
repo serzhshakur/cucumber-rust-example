@@ -1,9 +1,9 @@
 pub mod api;
 pub mod config;
-pub mod responses;
 pub mod requests;
+pub mod responses;
 
-use api::{client::ApiClient, api::Api};
+use api::api::Api;
 use config::Config;
 
 #[derive(Debug)]
@@ -19,9 +19,7 @@ impl Deps {
             Ok(config) => config,
             Err(error) => panic!("Some environment variables are missing\n{:#?}", error),
         };
-
-        let client = ApiClient::new(&env);
-        let api = Api::new(client);
+        let api = Api::new(&env);
         Deps { env, api }
     }
 }

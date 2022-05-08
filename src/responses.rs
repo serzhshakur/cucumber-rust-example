@@ -1,6 +1,7 @@
-use std::collections::HashMap;
-
+use chrono::serde::ts_seconds;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiResponse<T> {
@@ -10,7 +11,8 @@ pub struct ApiResponse<T> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ServerTimeResponse {
-    pub unixtime: i64,
+    #[serde(with = "ts_seconds")]
+    pub unixtime: DateTime<Utc>,
     pub rfc1123: String,
 }
 

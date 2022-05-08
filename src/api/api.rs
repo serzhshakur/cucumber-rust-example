@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{
+    config::Config,
     requests::OrderRequest,
     responses::{ApiResponse, OpenOrderResponse, ServerTimeResponse},
 };
@@ -13,7 +14,8 @@ pub struct Api {
 }
 
 impl Api {
-    pub fn new(client: ApiClient) -> Self {
+    pub fn new(env: &Config) -> Self {
+        let client = ApiClient::new(env);
         Self { client }
     }
 }

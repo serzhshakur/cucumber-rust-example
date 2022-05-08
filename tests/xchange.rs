@@ -2,7 +2,7 @@ use std::convert::Infallible;
 
 use anyhow::bail;
 use async_trait::async_trait;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use cucumber::{then, when, World, WorldInit};
 use xchange_cucumber_rust::{
     api::api::{MarketApi, UserApi},
@@ -47,14 +47,12 @@ async fn retrieve_server_time(world: &mut MyWorld) -> anyhow::Result<()> {
 async fn check_server_time(world: &mut MyWorld) {
     match &world.data {
         State::ServerTime(data) => {
-            let now = Utc::now().naive_utc();
-            let from_unix = NaiveDateTime::from_timestamp(data.unixtime, 0);
-            let from_rfc_string = DateTime::parse_from_rfc2822(&data.rfc1123)
-                .unwrap()
-                .naive_utc();
+            let now = Utc::now();
+            let unix_time = data.unixtime;
+            let rfc_time = DateTime::parse_from_rfc2822(&data.rfc1123).unwrap();
 
-            assert!(now.signed_duration_since(from_unix).num_seconds() < 2);
-            assert!(now.signed_duration_since(from_rfc_string).num_seconds() < 2);
+            assert!(now.signed_duration_since(unix_time).num_seconds() < 2);
+            assert!(now.signed_duration_since(rfc_time).num_seconds() < 2);
         }
         _ => panic!("server time is not retrieved"),
     }
