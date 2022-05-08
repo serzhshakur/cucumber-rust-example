@@ -66,7 +66,7 @@ impl UserApi for Api {
         let req = OrderRequest::default();
         let res = self
             .client
-            .post_private::<OrderRequest, OpenOrderResponse>("0/private/OpenOrders", Some(req))
+            .post_private("0/private/OpenOrders", Some(req))
             .await?;
 
         Ok(res)

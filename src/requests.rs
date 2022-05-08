@@ -4,14 +4,22 @@ use serde::Serialize;
 #[derive(Debug, Serialize)]
 pub struct ApiRequestWithNonce<T: Serialize> {
     pub nonce: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub otp: Option<String>,
     #[serde(flatten)]
     pub data: Option<T>,
 }
 
 impl<T: Serialize> ApiRequestWithNonce<T> {
-    pub fn new(data: Option<T>) -> Self {
+    pub fn new(data: Option<T>, tfa_pass: &Option<String>) -> Self {
+        let otp = match tfa_pass {
+            Some(pass) => Some(pass.to_owned()),
+            None => None,
+        };
+
         Self {
             nonce: Utc::now().timestamp_millis(),
+            otp,
             data,
         }
     }

@@ -27,23 +27,23 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_public<R: DeserializeOwned, T: Serialize>(
+    pub async fn get_public<R: Serialize, T: DeserializeOwned>(
         &self,
         path: &str,
-        request_data: T,
-    ) -> anyhow::Result<R> {
+        request_data: R,
+    ) -> anyhow::Result<T> {
         let url = format!("{}/{}", self.env.api_url, normalize_path(path));
         let res = self.client.get(&url).query(&request_data).send().await?;
 
         Ok(res.json().await?)
     }
 
-    pub async fn post_private<T, D>(&self, path: &str, data: Option<T>) -> anyhow::Result<D>
+    pub async fn post_private<R, T>(&self, path: &str, data: Option<R>) -> anyhow::Result<T>
     where
-        T: Serialize,
-        D: DeserializeOwned + Serialize,
+        R: Serialize,
+        T: DeserializeOwned + Serialize,
     {
-        let request_data = ApiRequestWithNonce::new(data);
+        let request_data = ApiRequestWithNonce::new(data, &self.env.tfa_password);
         let path = normalize_path(path);
         let url = format!("{}/{}", self.env.api_url, path);
         let api_sign = sign_request(&path, &request_data, &self.env.priv_key)?;
@@ -58,7 +58,7 @@ impl ApiClient {
             .await?;
 
         if res.status().is_success() {
-            let api_response = res.json::<ApiResponse<D>>().await?;
+            let api_response = res.json::<ApiResponse<T>>().await?;
             if !api_response.error.is_empty() {
                 bail!("API call failed with errors: {:?}", api_response.error);
             } else {

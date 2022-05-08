@@ -16,8 +16,6 @@ where
 {
     let data = format!("{}{}", req.nonce, serde_urlencoded::to_string(req)?);
 
-    println!("{}", data);
-
     let mut sha256 = Sha256::new();
     sha256.update(&data.as_bytes());
     let message_hash = sha256.finalize();
@@ -56,6 +54,7 @@ mod tests {
         let req = ApiRequestWithNonce {
             nonce: 1616492376594,
             data: Some(data),
+            otp: None,
         };
 
         let res = sign_request(uri_path, &req, priv_key)?;
