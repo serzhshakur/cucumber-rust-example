@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 
 use crate::{
     config::Config,
-    requests::OrderRequest,
-    responses::{ApiResponse, OpenOrderResponse, ServerTimeResponse},
+    requests::{AssetPairsRequest, EmptyRequest, OrderRequest},
+    responses::{ApiResponse, AssetPairResponse, OpenOrderResponse, ServerTimeResponse},
 };
 
 use super::client::ApiClient;
@@ -23,17 +25,33 @@ impl Api {
 #[async_trait]
 pub trait MarketApi {
     async fn get_server_time(&self) -> anyhow::Result<Option<ServerTimeResponse>>;
+    async fn get_asset_pairs(
+        &self,
+        request: AssetPairsRequest,
+    ) -> anyhow::Result<HashMap<String, AssetPairResponse>>;
 }
 
 #[async_trait]
 impl MarketApi for Api {
     async fn get_server_time(&self) -> anyhow::Result<Option<ServerTimeResponse>> {
-        let res = self
+        let res: ApiResponse<ServerTimeResponse> = self
             .client
-            .get_public::<ApiResponse<ServerTimeResponse>>("0/public/Time")
+            .get_public("0/public/Time", EmptyRequest::default())
             .await?;
 
         Ok(res.result)
+    }
+
+    async fn get_asset_pairs(
+        &self,
+        request: AssetPairsRequest,
+    ) -> anyhow::Result<HashMap<String, AssetPairResponse>> {
+        let res: ApiResponse<HashMap<String, AssetPairResponse>> = self
+            .client
+            .get_public("0/public/AssetPairs", request)
+            .await?;
+
+        Ok(res.result.unwrap())
     }
 }
 

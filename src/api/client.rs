@@ -27,21 +27,21 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_public<T>(&self, path: &str) -> anyhow::Result<T>
-    where
-        T: DeserializeOwned,
-    {
-        let path = normalize_path(path);
-        let url = format!("{}/{}", self.env.api_url, path);
-        let res = self.client.get(&url).send().await?;
+    pub async fn get_public<R: DeserializeOwned, T: Serialize>(
+        &self,
+        path: &str,
+        request_data: T,
+    ) -> anyhow::Result<R> {
+        let url = format!("{}/{}", self.env.api_url, normalize_path(path));
+        let res = self.client.get(&url).query(&request_data).send().await?;
 
-        Ok(res.json::<T>().await?)
+        Ok(res.json().await?)
     }
 
     pub async fn post_private<T, D>(&self, path: &str, data: Option<T>) -> anyhow::Result<D>
     where
         T: Serialize,
-        D: DeserializeOwned,
+        D: DeserializeOwned + Serialize,
     {
         let request_data = ApiRequestWithNonce::new(data);
         let path = normalize_path(path);

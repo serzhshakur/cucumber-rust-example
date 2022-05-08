@@ -1,12 +1,13 @@
-use std::convert::Infallible;
+use std::{collections::HashMap, convert::Infallible};
 
 use anyhow::bail;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use cucumber::{then, when, World, WorldInit};
+use cucumber::{given, then, when, World, WorldInit};
 use xchange_cucumber_rust::{
     api::api::{MarketApi, UserApi},
-    responses::{OpenOrderResponse, ServerTimeResponse},
+    requests::{AssetPairInfo, AssetPairsRequest},
+    responses::{AssetPairResponse, OpenOrderResponse, ServerTimeResponse},
     Deps,
 };
 
@@ -15,6 +16,7 @@ enum State {
     Empty,
     ServerTime(ServerTimeResponse),
     OpenOrders(OpenOrderResponse),
+    AssetPair(String, Option<HashMap<String, AssetPairResponse>>),
 }
 
 #[derive(WorldInit, Debug)]
@@ -56,6 +58,48 @@ async fn check_server_time(world: &mut MyWorld) {
         }
         _ => panic!("server time is not retrieved"),
     }
+}
+
+#[given(regex = r#"^client chooses asset pair "([0-9A-Za-z]+)/([0-9A-Za-z]+)"$"#)]
+async fn set_asset_pair(
+    world: &mut MyWorld,
+    base_asset: String,
+    quote_asset: String,
+) -> anyhow::Result<()> {
+    let pair = format!("{}{}", base_asset.trim(), quote_asset.trim());
+    world.data = State::AssetPair(pair, None);
+    Ok(())
+}
+
+#[when("an asset pair is queried")]
+async fn query_asset_pair(world: &mut MyWorld) -> anyhow::Result<()> {
+    match &world.data {
+        State::AssetPair(pair, _) => {
+            let req = AssetPairsRequest {
+                pair: pair.to_owned(),
+                info: Some(AssetPairInfo::Info),
+            };
+            let res = world.deps.api.get_asset_pairs(req).await?;
+            world.data = State::AssetPair(pair.to_owned(), Some(res));
+            Ok(())
+        }
+        _ => bail!("no pair is set"),
+    }
+}
+
+#[then("a valid info about asset pair is returned")]
+async fn check_asset_pairs_response(world: &mut MyWorld) -> anyhow::Result<()> {
+    match &world.data {
+        State::AssetPair(pair, res) => match res {
+            Some(res) => {
+                assert_eq!(res.len(), 1);
+                assert!(res.contains_key(pair));
+            }
+            None => bail!("no API response is set in previous step"),
+        },
+        _ => bail!("no asset pair is set"),
+    }
+    Ok(())
 }
 
 #[when("I query open orders")]

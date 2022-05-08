@@ -17,6 +17,25 @@ impl<T: Serialize> ApiRequestWithNonce<T> {
     }
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AssetPairInfo {
+    Info,
+    Leverage,
+    Fees,
+    Margin,
+}
+
+#[derive(Serialize, Default)]
+pub struct EmptyRequest {}
+
+#[derive(Debug, Serialize, Default)]
+pub struct AssetPairsRequest {
+    pub pair: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub info: Option<AssetPairInfo>,
+}
+
 #[derive(Debug, Serialize, Default)]
 pub struct OrderRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -34,3 +53,7 @@ pub struct AddOrderRequest {
     pub order_direction: String,
     pub volume: String,
 }
+
+pub trait GenericApiRequest {}
+
+impl GenericApiRequest for AssetPairsRequest {}
