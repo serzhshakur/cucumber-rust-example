@@ -13,8 +13,10 @@ RUN cargo build --tests
 
 RUN rm -rf src
 RUN rm Cargo.toml
+
 ENV PROFILE=ci
 
 ADD . ./
+RUN chmod +x ./entrypoint.sh
 
-CMD ["cargo", "test", "--test", "xchange"]
+CMD ["./entrypoint.sh"]

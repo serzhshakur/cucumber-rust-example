@@ -5,22 +5,28 @@ services:
     build: .
     environment:
       PROFILE: ci
-      API_URL: "${API_URL}"
-      PRIV_KEY: "${PRIV_KEY}"
-      API_KEY: "${API_KEY}"
-      TFA_PASSWORD: "${TFA_PASSWORD}"
-      REPORTS_DIR: "/tmp/reports"
+      API_URL: "${API_URL?mandatory}"
+      PRIV_KEY: "${PRIV_KEY?mandatory}"
+      API_KEY: "${API_KEY?mandatory}"
+      TFA_PASSWORD: "${TFA_PASSWORD?mandatory}"
+      REPORT_DEST_DIR: "/tmp/reports_dest"
     volumes:
-      - "results-volume:/tmp/reports"
+      - "results-volume:/tmp/reports_dest"
 
   allure-report:
     image: imanel/allure
+    depends_on:
+      - cucumber-tests
     ports:
       - '8080:8080'
-    command: "serve -p 8080"
+    entrypoint: /bin/bash
+    command: |
+      /tmp/entrypoint_allure.sh
     volumes:
+      - "./entrypoint_allure.sh:/tmp/entrypoint_allure.sh"
       - "results-volume:/app/allure-results"
       - "report-volume:/app/allure-report"
+
 volumes:
   results-volume:
   report-volume:
