@@ -1,0 +1,9 @@
+target
+**/.env
+**/.envrc
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+**/Dockerfile
+readme.md
