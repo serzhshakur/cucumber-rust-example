@@ -3,9 +3,6 @@ on: workflow_dispatch
 
 jobs:
   build:
-    permissions:
-      checks: write
-      pull-requests: write
     runs-on: ubuntu-latest
 
     steps:
@@ -28,8 +25,3 @@ jobs:
         run: |
           cargo test --lib
           cargo test --test xchange
-
-      # - name: Publish Test Results
-      #   uses: EnricoMi/publish-unit-test-result-action/composite@v1
-      #   with:
-      #     files: "target/junit.xml"

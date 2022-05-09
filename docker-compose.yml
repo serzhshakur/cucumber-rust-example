@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  cucumber-tests:
+    build: .
+    environment:
+      PROFILE: ci
+      API_URL: "${API_URL}"
+      PRIV_KEY: "${PRIV_KEY}"
+      API_KEY: "${API_KEY}"
+      TFA_PASSWORD: "${TFA_PASSWORD}"
+      REPORTS_DIR: "/tmp/reports"
+    volumes:
+      - "results-volume:/tmp/reports"
+
+  allure-report:
+    image: imanel/allure
+    ports:
+      - '8080:8080'
+    command: "serve -p 8080"
+    volumes:
+      - "results-volume:/app/allure-results"
+      - "report-volume:/app/allure-report"
+volumes:
+  results-volume:
+  report-volume:

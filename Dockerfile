@@ -1,7 +1,7 @@
-FROM rust:latest as builder
+FROM rust:latest
 
-RUN USER=root cargo new --lib build-deps
-WORKDIR /build-deps
+RUN cargo new --lib cucumber-tests
+WORKDIR /cucumber-tests
 
 COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
@@ -13,7 +13,8 @@ RUN cargo build --tests
 
 RUN rm -rf src
 RUN rm Cargo.toml
+ENV PROFILE=ci
 
 ADD . ./
 
-CMD ["cargo test --test xchange"]
+CMD ["cargo", "test", "--test", "xchange"]
