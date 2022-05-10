@@ -18,7 +18,7 @@ pub enum Profile {
 
 impl Profile {
     pub fn init() -> Profile {
-        let profile = env::var("PROFILE").unwrap_or("dev".to_string());
+        let profile = env::var("PROFILE").unwrap_or_else(|_| "dev".to_string());
 
         match profile.as_str() {
             "dev" => Self::Dev,

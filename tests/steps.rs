@@ -19,6 +19,25 @@ enum State {
     AssetPair(Pair, Option<HashMap<String, AssetPairResponse>>),
 }
 
+#[derive(WorldInit, Debug)]
+pub struct MyWorld {
+    deps: Deps,
+    state: State,
+}
+
+#[async_trait(?Send)]
+impl World for MyWorld {
+    type Error = Infallible;
+
+    async fn new() -> Result<Self, Infallible> {
+        let deps = Deps::init().await;
+        Ok(Self {
+            deps,
+            state: State::Empty,
+        })
+    }
+}
+
 #[derive(Debug, Eq, Parameter, PartialEq, Clone)]
 #[param(name = "pair", regex = "([0-9A-Za-z]+/[0-9A-Za-z]+)")]
 struct Pair {
@@ -61,25 +80,6 @@ impl FromStr for Pair {
         };
 
         Ok(asset_pair)
-    }
-}
-
-#[derive(WorldInit, Debug)]
-pub struct MyWorld {
-    deps: Deps,
-    state: State,
-}
-
-#[async_trait(?Send)]
-impl World for MyWorld {
-    type Error = Infallible;
-
-    async fn new() -> Result<Self, Infallible> {
-        let deps = Deps::init().await;
-        Ok(Self {
-            deps,
-            state: State::Empty,
-        })
     }
 }
 

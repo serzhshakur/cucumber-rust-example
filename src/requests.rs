@@ -13,11 +13,7 @@ pub struct ApiRequestWithNonce<T: Serialize> {
 
 impl<T: Serialize> ApiRequestWithNonce<T> {
     pub fn new(data: Option<T>, tfa_pass: &Option<String>) -> Self {
-        let otp = match tfa_pass {
-            Some(pass) => Some(pass.to_owned()),
-            None => None,
-        };
-
+        let otp = tfa_pass.as_ref().map(|pass| pass.to_owned());
         Self {
             nonce: Utc::now().timestamp_nanos(),
             otp,

@@ -4,7 +4,7 @@ pub mod requests;
 pub mod responses;
 
 use api::api::Api;
-use config::{Config, Profile};
+use config::Config;
 
 #[derive(Debug)]
 pub struct Deps {
@@ -14,9 +14,6 @@ pub struct Deps {
 
 impl Deps {
     pub async fn init() -> Self {
-        if let Profile::Dev = Profile::init() {
-            dotenv::dotenv().expect("unable to setup env vars");
-        }
         let env = match envy::from_env::<Config>() {
             Ok(config) => config,
             Err(error) => panic!("Some environment variables are missing\n{:#?}", error),

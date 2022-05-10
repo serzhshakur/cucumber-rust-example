@@ -5,11 +5,11 @@ services:
     build: .
     environment:
       PROFILE: ci
+      REPORT_DEST_DIR: "/tmp/reports_dest"
       API_URL: "${API_URL?mandatory}"
       PRIV_KEY: "${PRIV_KEY?mandatory}"
       API_KEY: "${API_KEY?mandatory}"
       TFA_PASSWORD: "${TFA_PASSWORD?mandatory}"
-      REPORT_DEST_DIR: "/tmp/reports_dest"
     volumes:
       - "results-volume:/tmp/reports_dest"
 

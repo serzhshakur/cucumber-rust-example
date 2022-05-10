@@ -14,6 +14,11 @@ This test project aims to cover at least the following scenarios:
   - Retrieve open orders on the account and validate response;
 - Report test results
 
+## Project structure
+
+Cucumber feature files are located in `./tests/features` directory.
+Cucumber main function is defined under `./tests/xchange.rs`
+
 ## Environment variables
 
 You need to set a number of env vars in order to make tests work.
@@ -42,7 +47,7 @@ cargo test --test xchange
 
 The project is Dockerized so it is also possible to run tests using Docker compose. In addition a Allure report is generated with tests results.
 
-Assuming you have `.env` file set up in your project's root folder run the following command (note `docker-compose` can read `.ev` files):
+Assuming you have `.env` file set up in your project's root folder run the following command (note `docker-compose` can read `.env` files):
 
 ```
 docker-compose up --build
