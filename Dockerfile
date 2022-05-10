@@ -8,6 +8,7 @@ COPY ./Cargo.toml ./Cargo.toml
 # removing tests config from Cargo.toml
 RUN sed '/\[\[test\]\]/,$d' Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
 
+# caching dependencies
 RUN cargo build --lib
 RUN cargo build --tests
 
