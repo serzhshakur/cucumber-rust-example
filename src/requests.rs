@@ -6,6 +6,7 @@ pub struct ApiRequestWithNonce<T: Serialize> {
     pub nonce: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub otp: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
     pub data: Option<T>,
 }
@@ -18,7 +19,7 @@ impl<T: Serialize> ApiRequestWithNonce<T> {
         };
 
         Self {
-            nonce: Utc::now().timestamp_millis(),
+            nonce: Utc::now().timestamp_nanos(),
             otp,
             data,
         }
@@ -61,7 +62,3 @@ pub struct AddOrderRequest {
     pub order_direction: String,
     pub volume: String,
 }
-
-pub trait GenericApiRequest {}
-
-impl GenericApiRequest for AssetPairsRequest {}

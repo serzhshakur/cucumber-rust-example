@@ -63,7 +63,10 @@ pub trait UserApi {
 #[async_trait]
 impl UserApi for Api {
     async fn get_open_orders(&self) -> anyhow::Result<OpenOrderResponse> {
-        let req = OrderRequest::default();
+        let req = OrderRequest {
+            trades: Some(true),
+            userref: None,
+        };
         let res = self
             .client
             .post_private("0/private/OpenOrders", Some(req))

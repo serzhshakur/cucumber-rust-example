@@ -1,12 +1,12 @@
-use std::{collections::HashMap, convert::Infallible};
+use std::{collections::HashMap, convert::Infallible, str::FromStr};
 
 use anyhow::bail;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use cucumber::{given, then, when, World, WorldInit};
+use cucumber::{given, then, when, Parameter, World, WorldInit};
 use xchange_cucumber_rust::{
     api::api::{MarketApi, UserApi},
-    requests::{AssetPairInfo, AssetPairsRequest},
+    requests::AssetPairsRequest,
     responses::{AssetPairResponse, OpenOrderResponse, ServerTimeResponse},
     Deps,
 };
@@ -16,7 +16,52 @@ enum State {
     Empty,
     ServerTime(ServerTimeResponse),
     OpenOrders(OpenOrderResponse),
-    AssetPair(String, Option<HashMap<String, AssetPairResponse>>),
+    AssetPair(Pair, Option<HashMap<String, AssetPairResponse>>),
+}
+
+#[derive(Debug, Eq, Parameter, PartialEq, Clone)]
+#[param(name = "pair", regex = "([0-9A-Za-z]+/[0-9A-Za-z]+)")]
+struct Pair {
+    name: String,
+    base: String,
+    quote: String,
+    altname: String,
+    wsname: String,
+}
+
+impl FromStr for Pair {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> anyhow::Result<Pair> {
+        let split: Vec<&str> = s.split("/").collect();
+        if split.len() != 2 {
+            bail!("Asset pair must be in the format BASE/QUOTE");
+        }
+        let base = split[0];
+        let quote = split[1];
+
+        fn alt_name(s: &str) -> &str {
+            let has_asset_code = s.len() > 3 && (s.starts_with("X") || s.starts_with("Z"));
+            if has_asset_code {
+                &s[1..]
+            } else {
+                s
+            }
+        }
+
+        let alt_base = alt_name(base);
+        let alt_quote = alt_name(quote);
+
+        let asset_pair = Pair {
+            name: format!("{}{}", base, quote),
+            base: base.to_string(),
+            quote: quote.to_string(),
+            altname: format!("{}{}", alt_base, alt_quote),
+            wsname: format!("{}/{}", alt_base, alt_quote),
+        };
+
+        Ok(asset_pair)
+    }
 }
 
 #[derive(WorldInit, Debug)]
@@ -60,14 +105,9 @@ async fn check_server_time(world: &mut MyWorld) {
     }
 }
 
-#[given(regex = r#"^client chooses asset pair "([0-9A-Za-z]+)/([0-9A-Za-z]+)"$"#)]
-async fn set_asset_pair(
-    world: &mut MyWorld,
-    base_asset: String,
-    quote_asset: String,
-) -> anyhow::Result<()> {
-    let pair = format!("{}{}", base_asset.trim(), quote_asset.trim());
-    world.state = State::AssetPair(pair, None);
+#[given(expr = "client chooses asset pair \"{pair}\"")]
+async fn set_asset_pair(world: &mut MyWorld, asset_pair: Pair) -> anyhow::Result<()> {
+    world.state = State::AssetPair(asset_pair, None);
     Ok(())
 }
 
@@ -76,11 +116,11 @@ async fn query_asset_pair(world: &mut MyWorld) -> anyhow::Result<()> {
     match &world.state {
         State::AssetPair(pair, _) => {
             let req = AssetPairsRequest {
-                pair: pair.to_owned(),
-                info: Some(AssetPairInfo::Info),
+                pair: pair.name.to_owned(),
+                info: None,
             };
             let res = world.deps.api.get_asset_pairs(req).await?;
-            world.state = State::AssetPair(pair.to_owned(), Some(res));
+            world.state = State::AssetPair(pair.clone(), Some(res));
             Ok(())
         }
         _ => bail!("no pair is set"),
@@ -93,7 +133,13 @@ async fn check_asset_pairs_response(world: &mut MyWorld) -> anyhow::Result<()> {
         State::AssetPair(pair, res) => match res {
             Some(res) => {
                 assert_eq!(res.len(), 1);
-                assert!(res.contains_key(pair));
+                assert!(res.contains_key(&pair.name));
+
+                let res = res.get(&pair.name).unwrap();
+                assert_eq!(res.altname, pair.altname);
+                assert_eq!(res.wsname, pair.wsname);
+                assert_eq!(res.quote, pair.quote);
+                assert_eq!(res.base, pair.base);
             }
             None => bail!("no API response is set in previous step"),
         },
