@@ -29,8 +29,11 @@ pub struct MyWorld {
 impl World for MyWorld {
     type Error = Infallible;
 
-    async fn new() -> Result<Self, Infallible> {
-        let deps = Deps::init().await;
+    async fn new() -> anyhow::Result<Self, Infallible> {
+        let deps = match Deps::init().await {
+            Ok(deps) => deps,
+            Err(e) => panic!("{}", e),
+        };
         Ok(Self {
             deps,
             state: State::Empty,

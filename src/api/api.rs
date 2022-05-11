@@ -16,9 +16,9 @@ pub struct Api {
 }
 
 impl Api {
-    pub fn new(env: &Config) -> Self {
-        let client = ApiClient::new(env);
-        Self { client }
+    pub fn new(env: &Config) -> anyhow::Result<Self> {
+        let client = ApiClient::new(env)?;
+        Ok(Self { client })
     }
 }
 

@@ -1,4 +1,4 @@
-use anyhow::bail;
+use anyhow::{bail, Context};
 use log::debug;
 use reqwest::ClientBuilder;
 use serde::{de::DeserializeOwned, Serialize};
@@ -14,17 +14,14 @@ pub struct ApiClient {
 }
 
 impl ApiClient {
-    pub fn new(config: &Config) -> Self {
+    pub fn new(config: &Config) -> anyhow::Result<Self> {
         debug!("Starting a new API client instance");
 
-        let client = ClientBuilder::new()
-            .build()
-            .expect("unable to build an API client");
-
-        Self {
+        let client = ClientBuilder::new().build()?;
+        Ok(Self {
             client,
             env: config.clone(),
-        }
+        })
     }
 
     pub async fn get_public<R: Serialize, T: DeserializeOwned>(
@@ -61,9 +58,10 @@ impl ApiClient {
             let api_response = res.json::<ApiResponse<T>>().await?;
             if !api_response.error.is_empty() {
                 bail!("API call failed with errors: {:?}", api_response.error);
-            } else {
             }
-            Ok(api_response.result.unwrap())
+            Ok(api_response
+                .result
+                .context("can't parse 'result' in API response")?)
         } else {
             bail!("unable to retrieve data from the API")
         }

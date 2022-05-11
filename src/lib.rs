@@ -13,12 +13,9 @@ pub struct Deps {
 }
 
 impl Deps {
-    pub async fn init() -> Self {
-        let env = match envy::from_env::<Config>() {
-            Ok(config) => config,
-            Err(error) => panic!("Some environment variables are missing\n{:#?}", error),
-        };
-        let api = Api::new(&env);
-        Deps { env, api }
+    pub async fn init() -> anyhow::Result<Self> {
+        let env = envy::from_env::<Config>()?;
+        let api = Api::new(&env)?;
+        Ok(Deps { env, api })
     }
 }
