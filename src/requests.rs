@@ -32,7 +32,7 @@ pub enum AssetPairInfo {
 }
 
 #[derive(Serialize, Default)]
-pub struct EmptyRequest {}
+pub struct EmptyRequest;
 
 #[derive(Debug, Serialize, Default)]
 pub struct AssetPairsRequest {

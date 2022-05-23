@@ -36,7 +36,7 @@ impl MarketApi for Api {
     async fn get_server_time(&self) -> anyhow::Result<Option<ServerTimeResponse>> {
         let res: ApiResponse<ServerTimeResponse> = self
             .client
-            .get_public("0/public/Time", EmptyRequest::default())
+            .get_public("0/public/Time", EmptyRequest)
             .await?;
 
         Ok(res.result)
